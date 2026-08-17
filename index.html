@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f6fed" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="勉強記録">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex, nofollow">
+<title>資格学習 勉強記録</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --border:#e2e6ec; --text:#1c2430; --muted:#6b7684;
+  --accent:#2f6fed; --accent-soft:#e8f0ff;
+  --c1:#e8833a; --c2:#2f9e73; --c3:#7a5af0;
+  --ok:#2f9e73; --warn:#d9822b; --bad:#d1495b;
+  --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#131720; --panel:#1b212c; --border:#2b3444; --text:#e6eaf0; --muted:#8d99ab;
+    --accent:#5b8cf5; --accent-soft:#22304d;
+    --c1:#f0975a; --c2:#48b98c; --c3:#9b7df5;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Yu Gothic UI","Meiryo","Hiragino Kaku Gothic ProN",system-ui,sans-serif;
+  font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 20px 80px}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:.02em}
+h2{font-size:15px;margin:0 0 14px;letter-spacing:.04em;color:var(--muted);
+  text-transform:none;font-weight:700}
+.sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:20px;margin-bottom:18px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:18px}
+@media(min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
+
+/* ---- 目標カード ---- */
+.goals{display:grid;gap:14px}
+@media(min-width:760px){.goals{grid-template-columns:repeat(3,1fr)}}
+.goal{border:1px solid var(--border);border-radius:10px;padding:14px 15px;background:var(--panel)}
+.goal .nm{font-weight:700;font-size:14px;margin-bottom:2px}
+.goal .dl{font-size:12px;color:var(--muted);margin-bottom:10px}
+.goal .big{font-size:24px;font-weight:700;letter-spacing:-.01em}
+.goal .big span{font-size:13px;font-weight:500;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:var(--border);overflow:hidden;margin:10px 0 8px}
+.bar>i{display:block;height:100%;border-radius:99px;transition:width .3s}
+.goal .pace{font-size:12px;color:var(--muted)}
+.goal .pace b{color:var(--text)}
+
+/* ---- KPI ---- */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:660px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.kpi .l{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.kpi .v{font-size:22px;font-weight:700;margin-top:2px}
+.kpi .v small{font-size:12px;font-weight:500;color:var(--muted);margin-left:2px}
+
+/* ---- フォーム ---- */
+.form{display:grid;gap:12px}
+@media(min-width:700px){
+  .form{grid-template-columns:repeat(4,1fr)}
+  .col2{grid-column:span 2}
+  .col4{grid-column:span 4}
+}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+input,select,textarea,button{font-family:inherit;font-size:14px;color:var(--text)}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border);
+  border-radius:8px;background:var(--bg)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+textarea{resize:vertical;min-height:44px}
+button{cursor:pointer;border:1px solid var(--border);background:var(--panel);
+  padding:9px 16px;border-radius:8px;font-weight:600;transition:.15s}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.primary:hover{filter:brightness(1.08);color:#fff}
+button.mini{padding:5px 10px;font-size:12px;font-weight:500}
+button.danger:hover{border-color:var(--bad);color:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.quick{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+
+/* ---- ヒートマップ ---- */
+.heat{display:flex;gap:3px;overflow-x:auto;padding-bottom:6px}
+.heat .wk{display:grid;grid-template-rows:repeat(7,12px);gap:3px}
+.heat .d{width:12px;height:12px;border-radius:3px;background:var(--border)}
+.heat .d[data-l="1"]{background:color-mix(in srgb,var(--accent) 25%,var(--border))}
+.heat .d[data-l="2"]{background:color-mix(in srgb,var(--accent) 50%,var(--border))}
+.heat .d[data-l="3"]{background:color-mix(in srgb,var(--accent) 75%,var(--border))}
+.heat .d[data-l="4"]{background:var(--accent)}
+.legend{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-top:8px}
+.legend .d{width:11px;height:11px;border-radius:3px}
+
+/* ---- 棒グラフ ---- */
+.chart{display:flex;align-items:flex-end;gap:4px;height:130px;margin-top:8px}
+.chart .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.chart .b>i{display:block;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+.chart .b>u{font-size:9px;color:var(--muted);text-align:center;text-decoration:none;
+  margin-top:4px;white-space:nowrap}
+
+/* ---- テーブル ---- */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-size:11px;color:var(--muted);letter-spacing:.05em;font-weight:700;white-space:nowrap}
+td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--accent-soft)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;color:#fff}
+.scroll{max-height:420px;overflow:auto}
+.stars{color:var(--warn);letter-spacing:1px;white-space:nowrap}
+.empty{color:var(--muted);text-align:center;padding:28px 0;font-size:13px}
+.note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.7}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters select,.filters input{width:auto;min-width:130px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:var(--bg);padding:10px 20px;border-radius:99px;font-size:13px;
+  font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ==================== スマートフォン ==================== */
+@media(max-width:700px){
+  .wrap{padding:16px 14px calc(40px + env(safe-area-inset-bottom))}
+  h1{font-size:19px}
+  .sub{margin-bottom:16px;font-size:12px}
+  .card{padding:15px 14px;margin-bottom:14px;border-radius:11px}
+
+  /* タップ領域を広げ、iOSのフォーカス時ズームを防ぐ（16px以上） */
+  input,select,textarea{font-size:16px;padding:11px 12px;min-height:44px}
+  button{min-height:44px;padding:11px 16px}
+  button.mini{min-height:36px;padding:7px 12px;font-size:13px}
+  .quick{gap:8px}
+  .quick button{flex:1}
+
+  .goal .big{font-size:21px}
+  .kpi{padding:11px 12px}
+  .kpi .v{font-size:19px}
+
+  /* 記録一覧をカード表示に切り替える */
+  .scroll{max-height:none;overflow:visible}
+  table.records,table.records tbody,table.records tr,table.records td{display:block;width:100%}
+  table.records thead{display:none}
+  table.records tbody tr{border:1px solid var(--border);border-radius:10px;
+    padding:11px 13px;margin-bottom:10px;background:var(--panel)}
+  table.records tbody tr:hover{background:var(--panel)}
+  table.records td{border:none;padding:3px 0;display:flex;gap:10px;
+    align-items:baseline;max-width:none}
+  table.records td::before{content:attr(data-l);flex:0 0 58px;color:var(--muted);
+    font-size:11px;font-weight:700;letter-spacing:.04em}
+  table.records td.num{text-align:left}
+  table.records td.act{justify-content:flex-end;gap:8px;margin-top:8px;
+    padding-top:9px;border-top:1px solid var(--border)}
+  table.records td.act::before{content:""; flex:1}
+
+  .filters{gap:7px}
+  .filters select,.filters input{min-width:0;flex:1 1 45%}
+  .filters input[type="text"]{flex:1 1 100%}
+  .row{gap:7px}
+  .row button{flex:1 1 46%}
+  .chart{height:110px}
+  .chart .b>u{font-size:8px}
+}
+@media(max-width:400px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .form{gap:10px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>資格学習 勉強記録</h1>
+  <div class="sub" id="today"></div>
+
+  <!-- ===== 目標進捗 ===== -->
+  <div class="card">
+    <h2>目標進捗</h2>
+    <div class="goals" id="goals"></div>
+  </div>
+
+  <!-- ===== KPI ===== -->
+  <div class="card">
+    <h2>サマリー</h2>
+    <div class="kpis" id="kpis"></div>
+  </div>
+
+  <!-- ===== 記録入力 ===== -->
+  <div class="card">
+    <h2>学習を記録する</h2>
+    <div class="form">
+      <div>
+        <label for="f-date">日付</label>
+        <input type="date" id="f-date">
+      </div>
+      <div>
+        <label for="f-cert">資格</label>
+        <select id="f-cert"></select>
+      </div>
+      <div class="col2">
+        <label for="f-subject">科目・単元</label>
+        <select id="f-subject"></select>
+      </div>
+      <div>
+        <label for="f-min">学習時間（分）</label>
+        <input type="number" id="f-min" min="1" max="1440" step="5" value="60">
+        <div class="quick">
+          <button class="mini" data-add="15">+15</button>
+          <button class="mini" data-add="30">+30</button>
+          <button class="mini" data-add="60">+60</button>
+          <button class="mini" data-add="0">クリア</button>
+        </div>
+      </div>
+      <div>
+        <label for="f-und">理解度</label>
+        <select id="f-und">
+          <option value="1">★☆☆☆☆ 全く分からない</option>
+          <option value="2">★★☆☆☆ あやふや</option>
+          <option value="3" selected>★★★☆☆ ふつう</option>
+          <option value="4">★★★★☆ 理解できた</option>
+          <option value="5">★★★★★ 人に説明できる</option>
+        </select>
+      </div>
+      <div class="col2">
+        <label for="f-content">学習内容（教材・範囲）</label>
+        <input type="text" id="f-content" placeholder="例）過去問道場 セキュリティ分野 50問">
+      </div>
+      <div class="col4">
+        <label for="f-memo">メモ（詰まった点・次回やること）</label>
+        <textarea id="f-memo" placeholder="例）擬似言語の再帰トレースが遅い。次回ハノイの塔をもう一度"></textarea>
+      </div>
+      <div class="col4 row">
+        <button class="primary" id="btn-add">記録する</button>
+        <button id="btn-cancel" style="display:none">編集をやめる</button>
+        <span class="note" id="edit-note"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <!-- ===== ヒートマップ ===== -->
+    <div class="card">
+      <h2>学習カレンダー（直近20週）</h2>
+      <div class="heat" id="heat"></div>
+      <div class="legend">
+        <span>少</span>
+        <span class="d" style="background:var(--border)"></span>
+        <span class="d" data-l="1"></span>
+        <span class="d" data-l="2"></span>
+        <span class="d" data-l="3"></span>
+        <span class="d" data-l="4"></span>
+        <span>多</span>
+        <span style="margin-left:auto">1マス＝1日／濃いほど長時間</span>
+      </div>
+    </div>
+
+    <!-- ===== 日次グラフ ===== -->
+    <div class="card">
+      <h2>直近14日の学習時間</h2>
+      <div class="chart" id="chart"></div>
+    </div>
+  </div>
+
+  <!-- ===== 科目別集計 ===== -->
+  <div class="card">
+    <h2>科目別の積み上げ</h2>
+    <div id="bysubject"></div>
+  </div>
+
+  <!-- ===== 記録一覧 ===== -->
+  <div class="card">
+    <h2>記録一覧</h2>
+    <div class="filters">
+      <select id="fl-cert"><option value="">すべての資格</option></select>
+      <select id="fl-period">
+        <option value="30">直近30日</option>
+        <option value="90">直近90日</option>
+        <option value="365">直近1年</option>
+        <option value="0" selected>すべて</option>
+      </select>
+      <input type="text" id="fl-kw" placeholder="キーワード検索">
+    </div>
+    <div class="scroll">
+      <table class="records">
+        <thead><tr>
+          <th>日付</th><th>資格</th><th>科目</th><th class="num">時間</th>
+          <th>内容</th><th>理解度</th><th>メモ</th><th></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== データ管理 ===== -->
+  <div class="card">
+    <h2>データ管理</h2>
+    <div class="row">
+      <button id="btn-csv">CSVで書き出す</button>
+      <button id="btn-json">JSONバックアップ</button>
+      <button id="btn-import">CSV / JSON を読み込む</button>
+      <input type="file" id="file" accept=".csv,.json" style="display:none">
+      <button class="danger" id="btn-clear">全データを削除</button>
+    </div>
+    <p class="note">
+      データはこのブラウザの localStorage に保存されます。<strong>ブラウザのキャッシュを消すと記録も消えます。</strong>
+      週に1度は「CSVで書き出す」を実行し、このフォルダに保存してください。<br>
+      読み込みは既存データに<strong>追加</strong>されます（日付・資格・科目・時間が完全一致する行は重複としてスキップ）。
+    </p>
+  </div>
+
+  <p class="note">
+    使い方：このファイルをダブルクリックしてブラウザで開くだけです。インターネット接続もインストールも不要です。<br>
+    ブックマークしておくと毎日の記録が続けやすくなります。
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ============ 設定：目標と科目 ============ */
+const CERTS = [
+  { key:"生成AIパスポート", color:"var(--c1)", targetH:30,  deadline:"2026-08-26",
+    subjects:["AIの基礎","生成AIの技術","現在の生成AI","情報リテラシー・コンプライアンス","模擬試験","その他"] },
+  { key:"基本情報技術者",   color:"var(--c2)", targetH:170, deadline:"2026-12-15",
+    subjects:["科目A テクノロジ系","科目A マネジメント系","科目A ストラテジ系",
+              "科目B アルゴリズム","科目B 情報セキュリティ","模擬試験","その他"] },
+  { key:"中小企業診断士",   color:"var(--c3)", targetH:900, deadline:"2027-08-07",
+    subjects:["経済学・経済政策","財務・会計","企業経営理論","運営管理","経営法務",
+              "経営情報システム","中小企業経営・政策",
+              "2次 事例I（組織・人事）","2次 事例II（マーケ・流通）",
+              "2次 事例III（生産・技術）","2次 事例IV（財務・会計）","模擬試験","その他"] }
+];
+const WEEKLY_TARGET_H = 14;         // 週あたり目標時間（KPI用）
+const STORE = "shikaku_study_log_v1";
+
+/* ============ ユーティリティ ============ */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parseISO = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const diffDays = (a,b) => Math.round((parseISO(iso(b))-parseISO(iso(a)))/86400000);
+const hm = min => (min>=60 ? Math.floor(min/60)+"時間"+(min%60?pad(min%60)+"分":"") : min+"分");
+const h1 = min => (min/60).toFixed(1);
+const certOf = k => CERTS.find(c=>c.key===k) || CERTS[0];
+const esc = s => String(s??"").replace(/[&<>"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+
+let LOG = [];
+let editId = null;
+
+function load(){
+  try { LOG = JSON.parse(localStorage.getItem(STORE) || "[]"); }
+  catch(e){ LOG = []; }
+  if(!Array.isArray(LOG)) LOG = [];
+  LOG.sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:(b.id||0)-(a.id||0));
+}
+function save(){
+  try { localStorage.setItem(STORE, JSON.stringify(LOG)); }
+  catch(e){ alert("保存に失敗しました。CSVで書き出してバックアップしてください。\n"+e.message); }
+}
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("on"),1900);
+}
+
+/* ============ 初期化 ============ */
+function initForm(){
+  const today = new Date();
+  $("#today").textContent =
+    today.getFullYear()+"年"+(today.getMonth()+1)+"月"+today.getDate()+"日 ("+
+    "日月火水木金土"[today.getDay()]+")";
+  $("#f-date").value = iso(today);
+
+  const cs = $("#f-cert"), fc = $("#fl-cert");
+  CERTS.forEach(c=>{
+    cs.insertAdjacentHTML("beforeend", `<option value="${esc(c.key)}">${esc(c.key)}</option>`);
+    fc.insertAdjacentHTML("beforeend", `<option value="${esc(c.key)}">${esc(c.key)}</option>`);
+  });
+  cs.addEventListener("change", fillSubjects);
+  fillSubjects();
+}
+function fillSubjects(){
+  const c = certOf($("#f-cert").value);
+  $("#f-subject").innerHTML = c.subjects
+    .map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+}
+
+/* ============ 記録の追加・編集・削除 ============ */
+function addRecord(){
+  const date = $("#f-date").value;
+  const min  = parseInt($("#f-min").value,10);
+  if(!date){ alert("日付を入力してください。"); return; }
+  if(!min || min<=0){ alert("学習時間を1分以上で入力してください。"); return; }
+
+  const rec = {
+    id: editId || (Date.now()+Math.floor(Math.random()*1000)),
+    date, cert: $("#f-cert").value, subject: $("#f-subject").value,
+    minutes: min, understanding: parseInt($("#f-und").value,10),
+    content: $("#f-content").value.trim(), memo: $("#f-memo").value.trim()
+  };
+  if(editId){
+    const i = LOG.findIndex(r=>r.id===editId);
+    if(i>=0) LOG[i]=rec;
+    endEdit();
+    toast("記録を更新しました");
+  }else{
+    LOG.push(rec);
+    toast(hm(min)+" を記録しました");
+  }
+  LOG.sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:(b.id||0)-(a.id||0));
+  save(); render();
+  $("#f-content").value=""; $("#f-memo").value="";
+}
+function startEdit(id){
+  const r = LOG.find(x=>x.id===id); if(!r) return;
+  editId = id;
+  $("#f-date").value=r.date; $("#f-cert").value=r.cert; fillSubjects();
+  if(![...$("#f-subject").options].some(o=>o.value===r.subject))
+    $("#f-subject").insertAdjacentHTML("beforeend",`<option value="${esc(r.subject)}">${esc(r.subject)}</option>`);
+  $("#f-subject").value=r.subject;
+  $("#f-min").value=r.minutes; $("#f-und").value=r.understanding||3;
+  $("#f-content").value=r.content||""; $("#f-memo").value=r.memo||"";
+  $("#btn-add").textContent="更新する";
+  $("#btn-cancel").style.display="";
+  $("#edit-note").textContent = r.date+" の記録を編集しています";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function endEdit(){
+  editId=null;
+  $("#btn-add").textContent="記録する";
+  $("#btn-cancel").style.display="none";
+  $("#edit-note").textContent="";
+}
+function delRecord(id){
+  const r = LOG.find(x=>x.id===id); if(!r) return;
+  if(!confirm(r.date+"「"+r.subject+"」"+hm(r.minutes)+" の記録を削除します。よろしいですか？")) return;
+  LOG = LOG.filter(x=>x.id!==id);
+  if(editId===id) endEdit();
+  save(); render(); toast("削除しました");
+}
+
+/* ============ 集計 ============ */
+function totalMin(filter){ return LOG.filter(filter||(()=>true)).reduce((s,r)=>s+r.minutes,0); }
+function byDate(){
+  const m = {};
+  LOG.forEach(r=> m[r.date] = (m[r.date]||0) + r.minutes );
+  return m;
+}
+function streak(){
+  const m = byDate(); const today = new Date();
+  let start = m[iso(today)] ? today : (m[iso(addDays(today,-1))] ? addDays(today,-1) : null);
+  if(!start) return 0;
+  let n=0, d=start;
+  while(m[iso(d)]){ n++; d=addDays(d,-1); }
+  return n;
+}
+function weekStart(d){ const x=new Date(d); const w=(x.getDay()+6)%7; return addDays(x,-w); } // 月曜始まり
+
+/* ============ 描画 ============ */
+function renderGoals(){
+  const today = new Date();
+  $("#goals").innerHTML = CERTS.map(c=>{
+    const done = totalMin(r=>r.cert===c.key)/60;
+    const pct  = Math.min(100, done/c.targetH*100);
+    const rest = Math.max(0, c.targetH-done);
+    const days = diffDays(today, parseISO(c.deadline));
+    const perDay = days>0 ? rest/days : 0;
+    let paceTxt, paceCol;
+    if(days<0){ paceTxt = "期限を過ぎています"; paceCol="var(--muted)"; }
+    else if(rest<=0){ paceTxt = "目標時間を達成しました"; paceCol="var(--ok)"; }
+    else {
+      paceTxt = `残り <b>${days}日</b> ／ 1日あたり <b>${(perDay*60).toFixed(0)}分</b> 必要`;
+      paceCol = perDay*60>180 ? "var(--bad)" : perDay*60>120 ? "var(--warn)" : "var(--muted)";
+    }
+    return `<div class="goal">
+      <div class="nm" style="color:${c.color}">${esc(c.key)}</div>
+      <div class="dl">目標 ${c.targetH}時間 ／ 期限 ${c.deadline}</div>
+      <div class="big">${done.toFixed(1)}<span> / ${c.targetH} h（${pct.toFixed(0)}%）</span></div>
+      <div class="bar"><i style="width:${pct}%;background:${c.color}"></i></div>
+      <div class="pace" style="color:${paceCol}">${paceTxt}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderKpis(){
+  const today = new Date();
+  const ws = weekStart(today), ms = new Date(today.getFullYear(),today.getMonth(),1);
+  const wk = totalMin(r=> parseISO(r.date)>=ws);
+  const mo = totalMin(r=> parseISO(r.date)>=ms);
+  const all = totalMin();
+  const st = streak();
+  const wkPct = Math.min(100, wk/60/WEEKLY_TARGET_H*100);
+  const days = new Set(LOG.map(r=>r.date)).size;
+  $("#kpis").innerHTML = `
+    <div class="kpi"><div class="l">今週（月曜〜）</div>
+      <div class="v">${h1(wk)}<small>h / ${WEEKLY_TARGET_H}h</small></div>
+      <div class="bar" style="margin:8px 0 0"><i style="width:${wkPct}%;background:var(--accent)"></i></div></div>
+    <div class="kpi"><div class="l">今月</div><div class="v">${h1(mo)}<small>h</small></div></div>
+    <div class="kpi"><div class="l">連続学習日数</div><div class="v">${st}<small>日</small></div></div>
+    <div class="kpi"><div class="l">累計（学習日 ${days}日）</div><div class="v">${h1(all)}<small>h</small></div></div>`;
+}
+
+function renderHeat(){
+  const m = byDate(), today = new Date();
+  const end = weekStart(today), weeks = 20;
+  let html = "";
+  for(let w=weeks-1; w>=0; w--){
+    html += '<div class="wk">';
+    for(let d=0; d<7; d++){
+      const day = addDays(end, -w*7 + d);
+      if(day>today){ html += '<div class="d" style="opacity:.25"></div>'; continue; }
+      const min = m[iso(day)]||0;
+      const l = min===0?0: min<60?1: min<120?2: min<180?3:4;
+      html += `<div class="d" data-l="${l}" title="${iso(day)}　${min?hm(min):"記録なし"}"></div>`;
+    }
+    html += "</div>";
+  }
+  $("#heat").innerHTML = html;
+}
+
+function renderChart(){
+  const m = byDate(), today = new Date();
+  const days = []; for(let i=13;i>=0;i--) days.push(addDays(today,-i));
+  const vals = days.map(d=> m[iso(d)]||0);
+  const max = Math.max(60, ...vals);
+  $("#chart").innerHTML = days.map((d,i)=>{
+    const v = vals[i];
+    return `<div class="b" title="${iso(d)}　${v?hm(v):"記録なし"}">
+      <i style="height:${v/max*100}%;opacity:${v?1:.15}"></i>
+      <u>${d.getMonth()+1}/${d.getDate()}</u></div>`;
+  }).join("");
+}
+
+function renderBySubject(){
+  const total = totalMin() || 1;
+  let html = "";
+  CERTS.forEach(c=>{
+    const rows = {};
+    LOG.filter(r=>r.cert===c.key).forEach(r=> rows[r.subject]=(rows[r.subject]||0)+r.minutes );
+    const sum = Object.values(rows).reduce((a,b)=>a+b,0);
+    if(sum===0) return;
+    const max = Math.max(...Object.values(rows));
+    html += `<div style="margin-bottom:18px">
+      <div style="font-weight:700;color:${c.color};margin-bottom:6px">
+        ${esc(c.key)}　<span style="color:var(--muted);font-weight:500;font-size:12px">計 ${h1(sum)}時間</span></div>
+      <table><tbody>` +
+      Object.entries(rows).sort((a,b)=>b[1]-a[1]).map(([s,v])=>
+        `<tr><td style="width:38%">${esc(s)}</td>
+         <td><div class="bar" style="margin:6px 0"><i style="width:${v/max*100}%;background:${c.color}"></i></div></td>
+         <td class="num" style="width:90px">${h1(v)} h</td>
+         <td class="num" style="width:60px;color:var(--muted)">${(v/sum*100).toFixed(0)}%</td></tr>`
+      ).join("") + `</tbody></table></div>`;
+  });
+  $("#bysubject").innerHTML = html || '<div class="empty">まだ記録がありません。上のフォームから最初の1件を登録してください。</div>';
+}
+
+function renderTable(){
+  const fc = $("#fl-cert").value;
+  const fp = parseInt($("#fl-period").value,10);
+  const kw = $("#fl-kw").value.trim().toLowerCase();
+  const from = fp ? addDays(new Date(), -fp) : null;
+  const rows = LOG.filter(r=>{
+    if(fc && r.cert!==fc) return false;
+    if(from && parseISO(r.date) < parseISO(iso(from))) return false;
+    if(kw){
+      const hay = (r.subject+" "+(r.content||"")+" "+(r.memo||"")+" "+r.cert).toLowerCase();
+      if(!hay.includes(kw)) return false;
+    }
+    return true;
+  });
+  if(!rows.length){
+    $("#tbody").innerHTML = '<tr><td colspan="8"><div class="empty">該当する記録がありません。</div></td></tr>';
+    return;
+  }
+  $("#tbody").innerHTML = rows.map(r=>{
+    const c = certOf(r.cert);
+    const u = r.understanding||3;
+    return `<tr>
+      <td data-l="日付">${esc(r.date)}</td>
+      <td data-l="資格"><span class="tag" style="background:${c.color}">${esc(r.cert)}</span></td>
+      <td data-l="科目">${esc(r.subject)}</td>
+      <td data-l="時間" class="num">${hm(r.minutes)}</td>
+      <td data-l="内容">${esc(r.content)}</td>
+      <td data-l="理解度" class="stars" title="理解度 ${u}/5">${"★".repeat(u)+"☆".repeat(5-u)}</td>
+      <td data-l="メモ" style="color:var(--muted);max-width:260px">${esc(r.memo)}</td>
+      <td class="num act">
+        <button class="mini" data-edit="${r.id}">編集</button>
+        <button class="mini danger" data-del="${r.id}">削除</button>
+      </td></tr>`;
+  }).join("");
+}
+
+function render(){
+  renderGoals(); renderKpis(); renderHeat(); renderChart();
+  renderBySubject(); renderTable();
+}
+
+/* ============ 入出力 ============ */
+const CSV_HEAD = ["date","cert","subject","minutes","understanding","content","memo"];
+function csvCell(v){
+  const s = String(v??"");
+  return /[",\r\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function exportCSV(){
+  if(!LOG.length){ alert("書き出す記録がありません。"); return; }
+  const lines = [CSV_HEAD.join(",")].concat(
+    LOG.slice().sort((a,b)=>a.date<b.date?-1:1)
+       .map(r=>[r.date,r.cert,r.subject,r.minutes,r.understanding||3,r.content||"",r.memo||""]
+       .map(csvCell).join(","))
+  );
+  // Excel で文字化けしないよう BOM 付き
+  download("﻿"+lines.join("\r\n"), "勉強記録_"+iso(new Date())+".csv", "text/csv");
+}
+function exportJSON(){
+  download(JSON.stringify(LOG,null,2), "勉強記録_バックアップ_"+iso(new Date())+".json", "application/json");
+}
+function download(text, name, mime){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text],{type:mime+";charset=utf-8"}));
+  a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  toast(name+" を保存しました");
+}
+function parseCSV(text){
+  text = text.replace(/^﻿/,"");
+  const rows=[]; let row=[], cell="", q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; }
+      else cell+=ch;
+    }else{
+      if(ch==='"') q=true;
+      else if(ch===","){ row.push(cell); cell=""; }
+      else if(ch==="\n"){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(ch!=="\r") cell+=ch;
+    }
+  }
+  if(cell!=="" || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=> r.length>1 || (r[0]||"").trim()!=="" );
+}
+function importFile(file){
+  const fr = new FileReader();
+  fr.onload = () => {
+    let incoming = [];
+    try{
+      if(/\.json$/i.test(file.name)){
+        incoming = JSON.parse(fr.result);
+        if(!Array.isArray(incoming)) throw new Error("配列形式のJSONではありません");
+      }else{
+        const rows = parseCSV(fr.result);
+        if(!rows.length) throw new Error("空のファイルです");
+        const head = rows[0].map(s=>s.trim());
+        const idx = k => head.indexOf(k);
+        if(idx("date")<0 || idx("minutes")<0) throw new Error("date / minutes 列が見つかりません");
+        incoming = rows.slice(1).map(r=>({
+          date:(r[idx("date")]||"").trim(),
+          cert:(r[idx("cert")]||CERTS[0].key).trim(),
+          subject:(r[idx("subject")]||"その他").trim(),
+          minutes:parseInt(r[idx("minutes")],10)||0,
+          understanding:parseInt(r[idx("understanding")],10)||3,
+          content:(r[idx("content")]||"").trim(),
+          memo:(r[idx("memo")]||"").trim()
+        }));
+      }
+    }catch(e){ alert("読み込みに失敗しました：\n"+e.message); return; }
+
+    const key = r => [r.date,r.cert,r.subject,r.minutes].join("|");
+    const have = new Set(LOG.map(key));
+    let add=0, skip=0;
+    incoming.forEach(r=>{
+      if(!r.date || !r.minutes){ skip++; return; }
+      if(have.has(key(r))){ skip++; return; }
+      have.add(key(r));
+      LOG.push(Object.assign({id: Date.now()+Math.floor(Math.random()*100000)}, r));
+      add++;
+    });
+    LOG.sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:(b.id||0)-(a.id||0));
+    save(); render();
+    alert(`読み込み完了\n追加 ${add}件 ／ スキップ（重複・不正） ${skip}件`);
+  };
+  fr.readAsText(file, "UTF-8");
+}
+
+/* ============ イベント ============ */
+document.addEventListener("click", e=>{
+  const t = e.target.closest("button"); if(!t) return;
+  if(t.dataset.add!==undefined){
+    const n = parseInt(t.dataset.add,10);
+    const el = $("#f-min");
+    el.value = n===0 ? 0 : (parseInt(el.value,10)||0)+n;
+  }
+  if(t.dataset.edit) startEdit(Number(t.dataset.edit));
+  if(t.dataset.del)  delRecord(Number(t.dataset.del));
+});
+$("#btn-add").addEventListener("click", addRecord);
+$("#btn-cancel").addEventListener("click", ()=>{ endEdit(); toast("編集を取り消しました"); });
+$("#btn-csv").addEventListener("click", exportCSV);
+$("#btn-json").addEventListener("click", exportJSON);
+$("#btn-import").addEventListener("click", ()=>$("#file").click());
+$("#file").addEventListener("change", e=>{ if(e.target.files[0]) importFile(e.target.files[0]); e.target.value=""; });
+$("#btn-clear").addEventListener("click", ()=>{
+  if(!LOG.length){ alert("削除するデータがありません。"); return; }
+  if(!confirm("全 "+LOG.length+" 件の記録を削除します。元に戻せません。\n先にCSVで書き出しましたか？")) return;
+  if(!confirm("本当に削除してよろしいですか？")) return;
+  LOG=[]; save(); render(); toast("全データを削除しました");
+});
+["#fl-cert","#fl-period"].forEach(s=>$(s).addEventListener("change", renderTable));
+$("#fl-kw").addEventListener("input", renderTable);
+document.addEventListener("keydown", e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==="Enter") addRecord();
+});
+
+/* ============ 起動 ============ */
+initForm(); load(); render();
+</script>
+</body>
+</html>
