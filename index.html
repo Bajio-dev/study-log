@@ -323,7 +323,8 @@ tbody tr:hover{background:var(--accent-soft)}
 
 /* ============ 設定：目標と科目 ============ */
 const CERTS = [
-  { key:"生成AIパスポート", color:"var(--c1)", targetH:30,  deadline:"2026-08-26",
+  { key:"生成AIパスポート", color:"var(--c1)", targetH:30,  deadline:"2026-08-31",
+    done:"2026-08-31 受験済み ／ 結果発表は9月中旬",
     subjects:["AIの基礎","生成AIの技術","現在の生成AI","情報リテラシー・コンプライアンス","模擬試験","その他"] },
   { key:"基本情報技術者",   color:"var(--c2)", targetH:170, deadline:"2026-12-15",
     subjects:["科目A テクノロジ系","科目A マネジメント系","科目A ストラテジ系",
@@ -471,7 +472,8 @@ function renderGoals(){
     const days = diffDays(today, parseISO(c.deadline));
     const perDay = days>0 ? rest/days : 0;
     let paceTxt, paceCol;
-    if(days<0){ paceTxt = "期限を過ぎています"; paceCol="var(--muted)"; }
+    if(c.done){ paceTxt = c.done; paceCol="var(--ok)"; }
+    else if(days<0){ paceTxt = "期限を過ぎています"; paceCol="var(--muted)"; }
     else if(rest<=0){ paceTxt = "目標時間を達成しました"; paceCol="var(--ok)"; }
     else {
       paceTxt = `残り <b>${days}日</b> ／ 1日あたり <b>${(perDay*60).toFixed(0)}分</b> 必要`;
@@ -479,7 +481,7 @@ function renderGoals(){
     }
     return `<div class="goal">
       <div class="nm" style="color:${c.color}">${esc(c.key)}</div>
-      <div class="dl">目標 ${c.targetH}時間 ／ 期限 ${c.deadline}</div>
+      <div class="dl">目標 ${c.targetH}時間 ／ ${c.done ? "受験日" : "期限"} ${c.deadline}</div>
       <div class="big">${done.toFixed(1)}<span> / ${c.targetH} h（${pct.toFixed(0)}%）</span></div>
       <div class="bar"><i style="width:${pct}%;background:${c.color}"></i></div>
       <div class="pace" style="color:${paceCol}">${paceTxt}</div>
