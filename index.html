@@ -15,7 +15,7 @@
 :root{
   --bg:#f6f7f9; --panel:#ffffff; --border:#e2e6ec; --text:#1c2430; --muted:#6b7684;
   --accent:#2f6fed; --accent-soft:#e8f0ff;
-  --c1:#e8833a; --c2:#2f9e73; --c3:#7a5af0;
+  --c1:#e8833a; --c2:#2f9e73; --c3:#7a5af0; --c4:#2b86c4;
   --ok:#2f9e73; --warn:#d9822b; --bad:#d1495b;
   --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.05);
 }
@@ -23,7 +23,7 @@
   :root{
     --bg:#131720; --panel:#1b212c; --border:#2b3444; --text:#e6eaf0; --muted:#8d99ab;
     --accent:#5b8cf5; --accent-soft:#22304d;
-    --c1:#f0975a; --c2:#48b98c; --c3:#9b7df5;
+    --c1:#f0975a; --c2:#48b98c; --c3:#9b7df5; --c4:#5aa9e6;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
   }
 }
@@ -43,7 +43,8 @@ h2{font-size:15px;margin:0 0 14px;letter-spacing:.04em;color:var(--muted);
 
 /* ---- 目標カード ---- */
 .goals{display:grid;gap:14px}
-@media(min-width:760px){.goals{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:760px){.goals{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.goals{grid-template-columns:repeat(4,1fr)}}
 .goal{border:1px solid var(--border);border-radius:10px;padding:14px 15px;background:var(--panel)}
 .goal .nm{font-weight:700;font-size:14px;margin-bottom:2px}
 .goal .dl{font-size:12px;color:var(--muted);margin-bottom:10px}
@@ -326,16 +327,19 @@ const CERTS = [
   { key:"生成AIパスポート", color:"var(--c1)", targetH:30,  deadline:"2026-08-31",
     done:"合格（2026-09-18）",
     subjects:["AIの基礎","生成AIの技術","現在の生成AI","情報リテラシー・コンプライアンス","模擬試験","その他"] },
-  { key:"基本情報技術者",   color:"var(--c2)", targetH:170, deadline:"2026-12-15",
+  { key:"基本情報技術者",   color:"var(--c2)", targetH:36,  deadline:"2026-12-26",
     subjects:["科目A テクノロジ系","科目A マネジメント系","科目A ストラテジ系",
               "科目B アルゴリズム","科目B 情報セキュリティ","模擬試験","その他"] },
   { key:"中小企業診断士",   color:"var(--c3)", targetH:900, deadline:"2027-08-07",
+    done:"後ろ倒し中（再開は2027年3月頃に判断）", dlLabel:"当初の1次",
     subjects:["経済学・経済政策","財務・会計","企業経営理論","運営管理","経営法務",
               "経営情報システム","中小企業経営・政策",
               "2次 事例I（組織・人事）","2次 事例II（マーケ・流通）",
-              "2次 事例III（生産・技術）","2次 事例IV（財務・会計）","模擬試験","その他"] }
+              "2次 事例III（生産・技術）","2次 事例IV（財務・会計）","模擬試験","その他"] },
+  { key:"RAG・LLM",        color:"var(--c4)", targetH:100, deadline:"2027-01-31",
+    subjects:["環境・API","RAG実装","評価・エラー分析","クラウド","権限・セキュリティ","面談対策・記事","その他"] }
 ];
-const WEEKLY_TARGET_H = 14;         // 週あたり目標時間（KPI用）
+const WEEKLY_TARGET_H = 8;          // 週あたり目標時間（KPI用）
 const STORE = "shikaku_study_log_v1";
 
 /* ============ ユーティリティ ============ */
@@ -358,7 +362,34 @@ function load(){
   try { LOG = JSON.parse(localStorage.getItem(STORE) || "[]"); }
   catch(e){ LOG = []; }
   if(!Array.isArray(LOG)) LOG = [];
+  LOG = LOG.map(r=>cleanRecord(r, false)).filter(Boolean);  // 保存データも型を確かめてから使う
   LOG.sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:(b.id||0)-(a.id||0));
+}
+/* ============ 記録の検証（2026-10-22 NCO 注意喚起への対応） ============
+ * 読み込んだファイル（JSON・CSV）と保存データの中身を、型を確かめてから使う。
+ * 学習時間・理解度は整数に、文字列の欄は文字列に直す。ID は数値だけ（ファイルからの記録は必ず新しく振る）。
+ * 画面の HTML に時間・理解度・ID を差し込む箇所があるため、細工したファイルでの XSS を防ぐ。
+ *   fromFile=true （読込）     : 学習時間は入力欄と同じ 1〜1440 分に限る
+ *   fromFile=false（保存データ）: 上限は設けない（これまでの記録を消さないため）。形が壊れた記録だけを外す
+ */
+function cleanRecord(r, fromFile){
+  if(!r || typeof r!=="object" || Array.isArray(r)) return null;
+  const txt = v => (typeof v==="string" || typeof v==="number") ? String(v).trim() : "";
+  const date = txt(r.date);
+  const minutes = parseInt(r.minutes,10);
+  if(!date || !(minutes>=1) || (fromFile && minutes>1440)) return null;
+  const und = parseInt(r.understanding,10);
+  const id = Number(r.id);
+  return {
+    id: (!fromFile && Number.isSafeInteger(id) && id>0) ? id : Date.now()+Math.floor(Math.random()*100000),
+    date,
+    cert: txt(r.cert) || CERTS[0].key,
+    subject: txt(r.subject) || "その他",
+    minutes,
+    understanding: (und>=1 && und<=5) ? und : 3,
+    content: txt(r.content),
+    memo: txt(r.memo)
+  };
 }
 function save(){
   try { localStorage.setItem(STORE, JSON.stringify(LOG)); }
@@ -481,7 +512,7 @@ function renderGoals(){
     }
     return `<div class="goal">
       <div class="nm" style="color:${c.color}">${esc(c.key)}</div>
-      <div class="dl">目標 ${c.targetH}時間 ／ ${c.done ? "受験日" : "期限"} ${c.deadline}</div>
+      <div class="dl">目標 ${c.targetH}時間 ／ ${c.dlLabel || (c.done ? "受験日" : "期限")} ${c.deadline}</div>
       <div class="big">${done.toFixed(1)}<span> / ${c.targetH} h（${pct.toFixed(0)}%）</span></div>
       <div class="bar"><i style="width:${pct}%;background:${c.color}"></i></div>
       <div class="pace" style="color:${paceCol}">${paceTxt}</div>
@@ -581,18 +612,18 @@ function renderTable(){
   }
   $("#tbody").innerHTML = rows.map(r=>{
     const c = certOf(r.cert);
-    const u = r.understanding||3;
+    const u = Math.min(5, Math.max(1, parseInt(r.understanding,10)||3));
     return `<tr>
       <td data-l="日付">${esc(r.date)}</td>
       <td data-l="資格"><span class="tag" style="background:${c.color}">${esc(r.cert)}</span></td>
       <td data-l="科目">${esc(r.subject)}</td>
-      <td data-l="時間" class="num">${hm(r.minutes)}</td>
+      <td data-l="時間" class="num">${hm(parseInt(r.minutes,10)||0)}</td>
       <td data-l="内容">${esc(r.content)}</td>
       <td data-l="理解度" class="stars" title="理解度 ${u}/5">${"★".repeat(u)+"☆".repeat(5-u)}</td>
       <td data-l="メモ" style="color:var(--muted);max-width:260px">${esc(r.memo)}</td>
       <td class="num act">
-        <button class="mini" data-edit="${r.id}">編集</button>
-        <button class="mini danger" data-del="${r.id}">削除</button>
+        <button class="mini" data-edit="${esc(r.id)}">編集</button>
+        <button class="mini danger" data-del="${esc(r.id)}">削除</button>
       </td></tr>`;
   }).join("");
 }
@@ -675,11 +706,12 @@ function importFile(file){
     const key = r => [r.date,r.cert,r.subject,r.minutes].join("|");
     const have = new Set(LOG.map(key));
     let add=0, skip=0;
-    incoming.forEach(r=>{
-      if(!r.date || !r.minutes){ skip++; return; }
+    incoming.forEach(raw=>{
+      const r = cleanRecord(raw, true);  // 型と範囲を確かめ、ID は必ず新しく振る（不正な行はスキップ）
+      if(!r){ skip++; return; }
       if(have.has(key(r))){ skip++; return; }
       have.add(key(r));
-      LOG.push(Object.assign({id: Date.now()+Math.floor(Math.random()*100000)}, r));
+      LOG.push(r);
       add++;
     });
     LOG.sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:(b.id||0)-(a.id||0));
